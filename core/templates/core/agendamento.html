@@ -1,55 +1,114 @@
 {% extends "core/base.html" %}
+{% block title %}Escolher Horário • Barbearia Oliveira{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h2>Finalizar Marcação</h2>
-    <p style="margin-bottom: 16px;">
-        <strong>Serviço:</strong> {{ servico_nome }}<br>
-        <strong>Profissional:</strong> {{ profissional_nome }}<br>
-        <strong>Data:</strong> {{ data_escolhida|date:"d/m/Y" }}
-    </p>
-
-    {% if form.errors %}
-        <div class="alert" role="alert">
-            Por favor, corrija os erros abaixo:
-            {{ form.non_field_errors }}
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <div>• {{ error }}</div>
-                {% endfor %}
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    {% if horarios_livres %}
-        <form method="post" novalidate>
-            {% csrf_token %}
-
-            <label>Escolha um Horário Livre:</label>
-            <div class="hours-grid">
-                {% for h in horarios_livres %}
-                <label class="option-label">
-                    <input type="radio" name="horario" value="{{ h }}"
-                        {% if form.horario.value == h %}checked{% endif %} required>
-                    <span>{{ h }}</span>
-                </label>
-                {% endfor %}
-            </div>
-
-            <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
-            {{ form.nome }}
-
-            <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
-            {{ form.telefone }}
-
-            <button type="submit" class="btn">Confirmar Marcação</button>
-            <a href="{% url 'core:index' %}" class="btn btn-secondary">Voltar</a>
-        </form>
-    {% else %}
-        <div class="alert">
-            Todos os horários para hoje com {{ profissional_nome }} já foram preenchidos.
-        </div>
-        <a href="{% url 'core:index' %}" class="btn btn-secondary">Escolher outro Profissional</a>
-    {% endif %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">PASSO 2 DE 2 • RESERVA DE HORÁRIO</p>
+    <h1>Finalizar Agendamento</h1>
+    <p class="muted">Escolha um horário livre no dia e informe seu nome e WhatsApp para confirmar.</p>
+  </div>
+  <a class="button secondary" href="{% url 'core:index' %}">&larr; Trocar serviço</a>
 </div>
+
+<!-- Filtro rápido de Serviço, Profissional e Data -->
+<section class="panel" style="padding: 18px 24px;">
+  <form method="get" class="filters" style="margin-bottom: 0;">
+    <div style="flex: 1; min-width: 180px;">
+      <label for="f-servico">Serviço selecionado</label>
+      <select id="f-servico" name="servico" onchange="this.form.submit()">
+        {% for cod, nome in servicos %}
+          <option value="{{ cod }}" {% if cod == servico_cod %}selected{% endif %}>{{ nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 180px;">
+      <label for="f-prof">Profissional</label>
+      <select id="f-prof" name="profissional" onchange="this.form.submit()">
+        {% for cod, nome in profissionais %}
+          <option value="{{ cod }}" {% if cod == profissional_cod %}selected{% endif %}>{{ nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 160px;">
+      <label for="f-data">Data do atendimento</label>
+      <input id="f-data" type="date" name="data" value="{{ data_escolhida|date:'Y-m-d' }}" min="{{ hoje|date:'Y-m-d' }}" onchange="this.form.submit()">
+    </div>
+    <div style="align-self: flex-end;">
+      <button type="submit" class="button secondary">Atualizar horários</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  {% if form.errors %}
+    <div class="flash error" role="alert" style="margin-bottom: 20px;">
+      <strong>Atenção:</strong> verifique os campos abaixo:
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        {% for error in field.errors %}
+          <div>• {{ error }}</div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if horarios_livres %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="servico" value="{{ servico_cod }}">
+      <input type="hidden" name="profissional" value="{{ profissional_cod }}">
+      <input type="hidden" name="data" value="{{ data_escolhida|date:'Y-m-d' }}">
+
+      <div class="panel-heading" style="margin-bottom: 12px;">
+        <div>
+          <h2>1. Horários disponíveis com {{ profissional_nome }} ({{ data_escolhida|date:"d/m/Y" }})</h2>
+          <p class="muted">Horários já ocupados ficam bloqueados automaticamente.</p>
+        </div>
+      </div>
+
+      <div class="hours-grid">
+        {% for item in grade_horarios %}
+          {% if item.livre %}
+            <label class="hour-pill">
+              <input type="radio" name="horario" value="{{ item.hora }}"
+                {% if form.horario.value == item.hora or forloop.first and not form.horario.value %}checked{% endif %} required>
+              <span>⏰ {{ item.hora }}</span>
+            </label>
+          {% else %}
+            <div class="hour-pill occupied" title="Horário já reservado">
+              <span>🔒 {{ item.hora }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <h2 style="margin-top: 24px; margin-bottom: 14px;">2. Dados do Cliente</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+          {{ form.nome }}
+        </div>
+        <div class="field">
+          <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
+          {{ form.telefone }}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--line); padding-top: 18px; margin-top: 10px;">
+        <a href="{% url 'core:index' %}" class="button secondary">Cancelar</a>
+        <button type="submit" class="button primary" style="min-width: 220px;">
+          ✔ Confirmar Marcação
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>Agenda lotada nesta data</h3>
+      <p>Todos os horários de {{ profissional_nome }} para {{ data_escolhida|date:"d/m/Y" }} já foram reservados.</p>
+      <a href="{% url 'core:index' %}" class="button primary">Escolher outro barbeiro ou data</a>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

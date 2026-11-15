@@ -1,34 +1,147 @@
 {% extends "core/base.html" %}
+{% block title %}Painel Inicial • Barbearia Oliveira{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h2>Agende seu Horário</h2>
-    <form action="{% url 'core:agendamento' %}" method="get">
-        <fieldset style="border: none;">
-            <label>1. Escolha o Serviço:</label>
-            <div class="options-grid">
-                {% for valor, rotulo in servicos %}
-                <label class="option-label">
-                    <input type="radio" name="servico" value="{{ valor }}" required>
-                    <span>{{ rotulo }}</span>
-                </label>
-                {% endfor %}
-            </div>
-        </fieldset>
-
-        <fieldset style="border: none;">
-            <label>2. Escolha o Profissional:</label>
-            <div class="options-grid">
-                {% for valor, rotulo in profissionais %}
-                <label class="option-label">
-                    <input type="radio" name="profissional" value="{{ valor }}" required>
-                    <span>{{ rotulo }}</span>
-                </label>
-                {% endfor %}
-            </div>
-        </fieldset>
-
-        <button type="submit" class="btn">Ver Horários Disponíveis &rarr;</button>
-    </form>
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">VISÃO GERAL & MARCAÇÃO RÁPIDA</p>
+    <h1>Bem-vindo à Barbearia Oliveira</h1>
+    <p class="muted">Escolha seu serviço e barbeiro abaixo ou acompanhe a agenda em tempo real.</p>
+  </div>
+  <a class="button primary" href="{% url 'core:agendamento' %}">✂️ + Novo Agendamento</a>
 </div>
+
+<!-- Cards de Indicadores (Dashboard) -->
+<div class="stats-grid">
+  <article class="stat-card">
+    <span class="stat-icon gold">📅</span>
+    <p>Total de agendamentos</p>
+    <strong>{{ stats.total }}</strong>
+    <small>Registros no sistema</small>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon blue">⏰</span>
+    <p>Agendados para hoje</p>
+    <strong>{{ stats.hoje }}</strong>
+    <small>Clientes aguardados hoje</small>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon purple">💈</span>
+    <p>Horários reservados</p>
+    <strong>{{ stats.agendados }}</strong>
+    <small>Aguardando atendimento</small>
+  </article>
+  <article class="stat-card">
+    <span class="stat-icon green">✔</span>
+    <p>Atendimentos concluídos</p>
+    <strong>{{ stats.concluidos }}</strong>
+    <small>Serviços finalizados</small>
+  </article>
+</div>
+
+<!-- Tela 1 do Fluxo: Seleção de Serviço e Profissional -->
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Agendar Horário — Passo 1 de 2</h2>
+      <p class="muted">Selecione o serviço desejado e o seu barbeiro de preferência para ver os horários livres.</p>
+    </div>
+  </div>
+
+  <form action="{% url 'core:agendamento' %}" method="get">
+    <label style="font-size: 14px; margin-bottom: 10px;">1. Escolha o Serviço:</label>
+    <div class="cards-grid-3">
+      {% for item in servicos_detalhes %}
+      <label class="choice-card">
+        <div>
+          <div class="choice-header">
+            <span style="font-size: 24px;">{{ item.icone }}</span>
+            <input type="radio" name="servico" value="{{ item.codigo }}" {% if forloop.first %}checked{% endif %} required>
+          </div>
+          <strong style="font-size: 16px; display: block; margin-bottom: 4px;">{{ item.titulo }}</strong>
+          <p class="muted" style="font-size: 12px; margin-bottom: 12px;">{{ item.descricao }}</p>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="price-badge">{{ item.preco }}</span>
+          <small class="muted">⏱ {{ item.duracao }}</small>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+
+    <label style="font-size: 14px; margin-bottom: 10px;">2. Escolha o Profissional:</label>
+    <div class="cards-grid-3">
+      {% for prof in profissionais_detalhes %}
+      <label class="choice-card" style="min-height: 90px;">
+        <div class="choice-header" style="margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="avatar">{{ prof.inicial }}</span>
+            <div>
+              <strong style="font-size: 15px; display: block;">{{ prof.nome }}</strong>
+              <small class="muted" style="font-size: 11px;">{{ prof.especialidade }}</small>
+            </div>
+          </div>
+          <input type="radio" name="profissional" value="{{ prof.codigo }}" {% if forloop.first %}checked{% endif %} required>
+        </div>
+      </label>
+      {% endfor %}
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <button type="submit" class="button primary" style="min-width: 240px; font-size: 14px;">
+        Continuar e Ver Horários Livres &rarr;
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- Próximos agendamentos / Recentes -->
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <h2>Últimos agendamentos registrados</h2>
+      <p class="muted">Acompanhe as marcações mais recentes da Barbearia Oliveira.</p>
+    </div>
+    <a class="text-link" href="{% url 'core:painel_barbeiro' %}">Ver agenda completa &rarr;</a>
+  </div>
+
+  {% if recentes %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Código / Serviço</th>
+          <th>Cliente</th>
+          <th>Barbeiro</th>
+          <th>Data e Hora</th>
+          <th>Valor</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ag in recentes %}
+        <tr>
+          <td><strong>#{{ ag.id }}</strong> • {{ ag.get_servico_display }}</td>
+          <td>
+            <strong>{{ ag.cliente.nome }}</strong><br>
+            <small class="muted">{{ ag.cliente.telefone }}</small>
+          </td>
+          <td>{{ ag.get_profissional_display }}</td>
+          <td>{{ ag.data_hora|date:"d/m/Y \à\s H:i" }}</td>
+          <td><strong>{{ ag.valor_formatado }}</strong></td>
+          <td><span class="status status-{{ ag.status }}">{{ ag.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💈</div>
+    <h3>Nenhum horário agendado ainda</h3>
+    <p>Escolha um serviço acima ou clique no botão abaixo para realizar a primeira marcação.</p>
+    <a class="button primary" href="{% url 'core:agendamento' %}">Fazer primeiro agendamento</a>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}

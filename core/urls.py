@@ -9,6 +9,7 @@ urlpatterns = [
     path("agendar/", views.agendamento, name="agendamento"),
     path("sucesso/<int:agendamento_id>/", views.sucesso, name="sucesso"),
     path("barbeiro/", views.painel_barbeiro, name="painel_barbeiro"),
+    path("clientes/", views.clientes, name="clientes"),
     path(
         "login/",
         auth_views.LoginView.as_view(template_name="core/login.html"),

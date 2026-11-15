@@ -1,19 +1,51 @@
 {% extends "core/base.html" %}
+{% block title %}Marcação Confirmada • Barbearia Oliveira{% endblock %}
 
 {% block content %}
-<div class="card" style="border-color: var(--success); text-align: center;">
-    <h2 style="color: var(--success); font-size: 1.6rem;">✅ Marcação Confirmada!</h2>
-    <p style="margin-bottom: 20px; font-size: 1.1rem;">
-        Tudo certo, <strong>{{ agendamento.cliente.nome }}</strong>! Seu horário está reservado.
-    </p>
-
-    <div style="text-align: left; background: #000; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-        <p><strong>📅 Data e Hora:</strong> {{ agendamento.data_hora|date:"d/m/Y \à\s H:i" }}</p>
-        <p><strong>✂️ Serviço:</strong> {{ agendamento.get_servico_display }}</p>
-        <p><strong>💈 Barbeiro:</strong> {{ agendamento.get_profissional_display }}</p>
-        <p><strong>📱 Telefone:</strong> {{ agendamento.cliente.telefone }}</p>
-    </div>
-
-    <a href="{% url 'core:index' %}" class="btn">Fazer Novo Agendamento</a>
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">COMPROVANTE DE AGENDAMENTO</p>
+    <h1>Marcação Confirmada!</h1>
+    <p class="muted">Seu horário foi registrado com sucesso na agenda da Barbearia Oliveira.</p>
+  </div>
+  <a class="button primary" href="{% url 'core:agendamento' %}">+ Novo Agendamento</a>
 </div>
+
+<section class="panel" style="max-width: 680px; border-top: 4px solid #16a34a;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+      <span class="status status-CONCLUIDO" style="font-size: 12px; padding: 6px 12px;">✔ Reserva #{{ agendamento.id }} Confirmada</span>
+      <h2 style="margin-top: 10px; font-size: 22px;">Tudo certo, {{ agendamento.cliente.nome }}!</h2>
+    </div>
+    <span style="font-size: 38px;">💈</span>
+  </div>
+
+  <div style="background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 22px; display: grid; gap: 10px;">
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+      <span class="muted">Data e Horário:</span>
+      <strong>📅 {{ agendamento.data_hora|date:"d/m/Y \à\s H:i" }}</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+      <span class="muted">Serviço escolhido:</span>
+      <strong>✂️ {{ agendamento.get_servico_display }}</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+      <span class="muted">Profissional:</span>
+      <strong>🧔 {{ agendamento.get_profissional_display }}</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+      <span class="muted">Cliente / WhatsApp:</span>
+      <strong>📱 {{ agendamento.cliente.nome }} ({{ agendamento.cliente.telefone }})</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <span class="muted">Valor estimado:</span>
+      <strong style="color: var(--gold); font-size: 16px;">{{ agendamento.valor_formatado }}</strong>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <a href="{% url 'core:index' %}" class="button primary">Voltar ao Painel Inicial</a>
+    <a href="{% url 'core:painel_barbeiro' %}" class="button secondary">Ver na Agenda do Barbeiro</a>
+  </div>
+</section>
 {% endblock %}

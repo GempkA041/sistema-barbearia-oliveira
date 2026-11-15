@@ -1,21 +1,25 @@
 {% extends "core/base.html" %}
+{% block title %}Login do Barbeiro • Barbearia Oliveira{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h2>Acesso Restrito — Barbeiro</h2>
-    {% if form.errors %}
-        <div class="alert">Usuário ou senha incorretos.</div>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        <label for="id_username">Usuário</label>
-        {{ form.username }}
+<section class="panel" style="max-width: 460px; margin: 20px auto;">
+  <p class="eyebrow">ACESSO ADMINISTRATIVO</p>
+  <h2>Área do Barbeiro</h2>
+  <p class="muted" style="margin-bottom: 18px;">Entre com suas credenciais para gerenciar o sistema.</p>
 
-        <label for="id_password">Senha</label>
-        {{ form.password }}
+  {% if form.errors %}
+    <div class="flash error" style="margin-bottom: 16px;">Usuário ou senha incorretos.</div>
+  {% endif %}
 
-        <button type="submit" class="btn">Entrar no Painel</button>
-        <a href="{% url 'core:index' %}" class="btn btn-secondary">Voltar ao Início</a>
-    </form>
-</div>
+  <form method="post">
+    {% csrf_token %}
+    <label for="id_username">Usuário</label>
+    {{ form.username }}
+
+    <label for="id_password">Senha</label>
+    {{ form.password }}
+
+    <button type="submit" class="button primary" style="width: 100%; margin-top: 8px;">Entrar no Painel</button>
+  </form>
+</section>
 {% endblock %}

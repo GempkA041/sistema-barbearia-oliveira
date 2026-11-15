@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% block title %}Clientes • Barbearia Oliveira{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">CADASTRO E HISTÓRICO</p>
+    <h1>Clientes da Barbearia</h1>
+    <p class="muted">Gerencie os contatos dos clientes e inicie um agendamento com um clique.</p>
+  </div>
+  <a class="button primary" href="{% url 'core:agendamento' %}">✂️ + Novo Agendamento</a>
+</div>
+
+<div class="two-column">
+  <section class="panel">
+    <h2>Novo cliente</h2>
+    <p class="muted" style="margin-bottom: 16px;">Cadastre rapidamente um cliente pelo nome e WhatsApp.</p>
+
+    {% if form.errors %}
+      <div class="flash error" style="margin-bottom: 14px;">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <div>• {{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+      {{ form.nome }}
+
+      <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
+      {{ form.telefone }}
+
+      <button class="button primary" type="submit" style="width: 100%; margin-top: 6px;">
+        Salvar Cliente
+      </button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Clientes cadastrados</h2>
+        <p class="muted">{{ clientes|length }} cliente(s) registrado(s)</p>
+      </div>
+    </div>
+
+    {% if clientes %}
+      <div>
+        {% for cli in clientes %}
+          <article class="client-item">
+            <div class="client-info">
+              <div class="avatar">{{ cli.inicial }}</div>
+              <div>
+                <strong style="font-size: 14px;">{{ cli.nome }}</strong>
+                <p class="muted" style="font-size: 12px; margin: 2px 0;">📱 {{ cli.telefone }}</p>
+                <small class="muted" style="font-size: 11px;">{{ cli.total_agendamentos }} agendamento(s) realizado(s)</small>
+              </div>
+            </div>
+            <a href="{% url 'core:agendamento' %}?cliente_id={{ cli.id }}" class="button secondary" style="padding: 8px 14px; font-size: 12px;">
+              Agendar horário
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <h3>Nenhum cliente cadastrado ainda</h3>
+        <p>Os clientes são cadastrados automaticamente ao agendar um horário ou pelo formulário ao lado.</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
