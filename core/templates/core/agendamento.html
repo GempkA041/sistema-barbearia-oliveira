@@ -1,0 +1,55 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Finalizar Marcação</h2>
+    <p style="margin-bottom: 16px;">
+        <strong>Serviço:</strong> {{ servico_nome }}<br>
+        <strong>Profissional:</strong> {{ profissional_nome }}<br>
+        <strong>Data:</strong> {{ data_escolhida|date:"d/m/Y" }}
+    </p>
+
+    {% if form.errors %}
+        <div class="alert" role="alert">
+            Por favor, corrija os erros abaixo:
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div>• {{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if horarios_livres %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <label>Escolha um Horário Livre:</label>
+            <div class="hours-grid">
+                {% for h in horarios_livres %}
+                <label class="option-label">
+                    <input type="radio" name="horario" value="{{ h }}"
+                        {% if form.horario.value == h %}checked{% endif %} required>
+                    <span>{{ h }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+            {{ form.nome }}
+
+            <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
+            {{ form.telefone }}
+
+            <button type="submit" class="btn">Confirmar Marcação</button>
+            <a href="{% url 'core:index' %}" class="btn btn-secondary">Voltar</a>
+        </form>
+    {% else %}
+        <div class="alert">
+            Todos os horários para hoje com {{ profissional_nome }} já foram preenchidos.
+        </div>
+        <a href="{% url 'core:index' %}" class="btn btn-secondary">Escolher outro Profissional</a>
+    {% endif %}
+</div>
+{% endblock %}

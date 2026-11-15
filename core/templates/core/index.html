@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Agende seu Horário</h2>
+    <form action="{% url 'core:agendamento' %}" method="get">
+        <fieldset style="border: none;">
+            <label>1. Escolha o Serviço:</label>
+            <div class="options-grid">
+                {% for valor, rotulo in servicos %}
+                <label class="option-label">
+                    <input type="radio" name="servico" value="{{ valor }}" required>
+                    <span>{{ rotulo }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </fieldset>
+
+        <fieldset style="border: none;">
+            <label>2. Escolha o Profissional:</label>
+            <div class="options-grid">
+                {% for valor, rotulo in profissionais %}
+                <label class="option-label">
+                    <input type="radio" name="profissional" value="{{ valor }}" required>
+                    <span>{{ rotulo }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </fieldset>
+
+        <button type="submit" class="btn">Ver Horários Disponíveis &rarr;</button>
+    </form>
+</div>
+{% endblock %}

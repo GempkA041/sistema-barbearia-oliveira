@@ -1,0 +1,69 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2>Agenda do Dia ({{ data_filtro|date:"d/m/Y" }})</h2>
+        <form action="{% url 'core:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="min-height: 44px; padding: 8px 14px; margin: 0;">Sair</button>
+        </form>
+    </div>
+
+    <form method="get" style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="date" name="data" value="{{ data_filtro|date:'Y-m-d' }}" style="margin-bottom: 0;">
+        <button type="submit" class="btn" style="width: auto; min-height: 48px;">Filtrar</button>
+    </form>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Serviço / Barbeiro</th>
+                    <th>Status / Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ag in agendamentos %}
+                <tr>
+                    <td><strong>{{ ag.data_hora|date:"H:i" }}</strong></td>
+                    <td>
+                        {{ ag.cliente.nome }}<br>
+                        <small>{{ ag.cliente.telefone }}</small>
+                    </td>
+                    <td>
+                        {{ ag.get_servico_display }}<br>
+                        <small>Barbeiro: {{ ag.get_profissional_display }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ ag.get_status_display }}</strong>
+                        {% if ag.status == "AGENDADO" %}
+                        <form method="post" style="margin-top: 8px; display: flex; gap: 6px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="agendamento_id" value="{{ ag.id }}">
+                            <button type="submit" name="novo_status" value="CONCLUIDO"
+                                style="min-height: 44px; min-width: 44px; padding: 6px 10px; background: var(--success); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">
+                                ✔ Concluir
+                            </button>
+                            <button type="submit" name="novo_status" value="CANCELADO"
+                                style="min-height: 44px; min-width: 44px; padding: 6px 10px; background: var(--danger); color: #fff; font-weight: bold; border: none; border-radius: 6px; cursor: pointer;">
+                                ✖ Cancelar
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 20px;">
+                        Nenhum agendamento encontrado para esta data.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="card" style="border-color: var(--success); text-align: center;">
+    <h2 style="color: var(--success); font-size: 1.6rem;">✅ Marcação Confirmada!</h2>
+    <p style="margin-bottom: 20px; font-size: 1.1rem;">
+        Tudo certo, <strong>{{ agendamento.cliente.nome }}</strong>! Seu horário está reservado.
+    </p>
+
+    <div style="text-align: left; background: #000; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+        <p><strong>📅 Data e Hora:</strong> {{ agendamento.data_hora|date:"d/m/Y \à\s H:i" }}</p>
+        <p><strong>✂️ Serviço:</strong> {{ agendamento.get_servico_display }}</p>
+        <p><strong>💈 Barbeiro:</strong> {{ agendamento.get_profissional_display }}</p>
+        <p><strong>📱 Telefone:</strong> {{ agendamento.cliente.telefone }}</p>
+    </div>
+
+    <a href="{% url 'core:index' %}" class="btn">Fazer Novo Agendamento</a>
+</div>
+{% endblock %}
