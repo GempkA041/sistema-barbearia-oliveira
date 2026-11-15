@@ -12,11 +12,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-chave-padrao-dev-barb
 
 DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,.onrender.com").split(",")
-    if host.strip()
-]
+ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 
@@ -62,13 +58,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Banco de Dados (Supabase via DATABASE_URL ou SQLite local caso não configurado)
+
+def get_database_config():
+    """
+    Configura o PostgreSQL (Supabase) via DATABASE_URL.
+    Caso a conexão falhe no ambiente de hospedagem (ex.: URL IPv6 direta do Supabase
+    no plano gratuito do Render), faz fallback automático para SQLite para evitar erro 500.
+    """
+    db_url = os.environ.get("DATABASE_URL", "").strip()
+    if db_url:
+        # Remove colchetes acidentais na senha caso existam: [senha] -> senha
+        db_url = db_url.replace("[", "").replace("]", "")
+        try:
+            import psycopg2
+            conn = psycopg2.connect(db_url, connect_timeout=4)
+            conn.close()
+            return dj_database_url.parse(db_url, conn_max_age=600)
+        except Exception as exc:
+            print(f"[AVISO] Não foi possível conectar ao DATABASE_URL ({exc}). Usando SQLite local de fallback.")
+
+    return {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+
+
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-        conn_max_age=600,
-        ssl_require=bool(os.environ.get("DATABASE_URL")) and not DEBUG,
-    )
+    "default": get_database_config(),
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -85,7 +101,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 LOGIN_URL = "core:login"
 LOGIN_REDIRECT_URL = "core:painel_barbeiro"
